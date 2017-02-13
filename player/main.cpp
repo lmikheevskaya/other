@@ -152,6 +152,6 @@ int main( int argc, char* args[] )
 	// Close the video file
 	avformat_close_input(&format_context);
 	
-    //Quit SDL
-    SDL_Quit();  
+    	//Quit SDL
+    	SDL_Quit();  
 }
