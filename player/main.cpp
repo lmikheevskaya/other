@@ -23,8 +23,8 @@ int main( int argc, char* args[] )
 	// Register all available file formats and codecs
 	av_register_all();
 
-    //Start SDL
-    int err = SDL_Init( SDL_INIT_EVERYTHING );
+    	//Start SDL
+    	int err = SDL_Init( SDL_INIT_EVERYTHING );
     
 	if(err < 0){
 		return -1;
@@ -35,57 +35,51 @@ int main( int argc, char* args[] )
 	AVFormatContext* format_context = NULL;
 	err = avformat_open_input(&format_context, filename, NULL, NULL);
 	if (err < 0) {
-		//fprintf(stderr, "ffmpeg: Unable to open input file\n");
 		return -1;
 	}
 
 	// Retrieve stream information
-    err = avformat_find_stream_info(format_context, NULL);
-    if (err < 0) {
-		//fprintf(stderr, "ffmpeg: Unable to find stream info\n");
-        return -1;
-    }
+    	err = avformat_find_stream_info(format_context, NULL);
+    	if (err < 0) {
+       	 	return -1;
+    	}
 
 	// Dump information about file onto standard error
-    av_dump_format(format_context, 0, filename, 0);
+    	av_dump_format(format_context, 0, filename, 0);
 
 	// Find the first video stream
 	int video_stream;
-    for (video_stream = 0; video_stream < format_context->nb_streams; ++video_stream) {
+    	for (video_stream = 0; video_stream < format_context->nb_streams; ++video_stream) {
 		if (format_context->streams[video_stream]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
 			break;
 		}
 	}
 	if (video_stream == format_context->nb_streams) {
-        //fprintf(stderr, "ffmpeg: Unable to find video stream\n");
-        return -1;
-    }
+       	 	return -1;
+    	}
 
-    // Get a pointer to the codec context for the video stream   
-    AVCodecContext* codec_context = format_context->streams[video_stream]->codec;
+    	// Get a pointer to the codec context for the video stream   
+    	AVCodecContext* codec_context = format_context->streams[video_stream]->codec;
 
 	// Find the decoder for the video stream
-    AVCodec* codec = avcodec_find_decoder(codec_context->codec_id);
+    	AVCodec* codec = avcodec_find_decoder(codec_context->codec_id);
 
 	if(!codec)
 		return -1;
 
-    err = avcodec_open2(codec_context, codec, NULL);
-    if (err < 0) {
-		//fprintf(stderr, "ffmpeg: Unable to open codec\n");
-        return -1;
-    }
+    	err = avcodec_open2(codec_context, codec, NULL);
+    	if (err < 0) {
+       	 	return -1;
+    	}
        
         SDL_Surface* screen = SDL_SetVideoMode(codec_context->width, codec_context->height, 0, 0);
         if (!screen) {
-                //fprintf(stderr, "Couldn't set video mode\n");
                 return -1;
         }
        
-        SDL_Overlay* bmp = SDL_CreateYUVOverlay(codec_context->width, codec_context->height,
-                                                                                        SDL_YV12_OVERLAY, screen);
+        SDL_Overlay* bmp = SDL_CreateYUVOverlay(codec_context->width, codec_context->height, SDL_YV12_OVERLAY, screen);
  
-		struct SwsContext* img_convert_context = nullptr;
+	struct SwsContext* img_convert_context = nullptr;
         img_convert_context = sws_getContext(codec_context->width, codec_context->height,
                               codec_context->pix_fmt,
                               codec_context->width, codec_context->height,
@@ -93,12 +87,11 @@ int main( int argc, char* args[] )
                               NULL, NULL, NULL);
 
         if (img_convert_context == NULL) {
-                //fprintf(stderr, "Cannot initialize the conversion context\n");
                 return -1;
         }
  
-		//// Allocate video frame
-		AVFrame* frame = av_frame_alloc();
+	// Allocate video frame
+	AVFrame* frame = av_frame_alloc();
         AVPacket packet;
         while (av_read_frame(format_context, &packet) >= 0) {
                 if (packet.stream_index == video_stream) {
